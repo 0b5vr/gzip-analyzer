@@ -1,5 +1,6 @@
 import { inflate, InflateToken } from './inflate/inflate';
 import { Renderer } from './Renderer';
+import domainBin from './assets/domain.bin?url';
 
 const inputFile = document.getElementById( 'inputFile' ) as HTMLInputElement;
 const canvas = document.getElementById( 'canvas' ) as HTMLCanvasElement;
@@ -19,28 +20,35 @@ window.addEventListener( 'resize', () => {
   renderer.resize( width, height );
 } );
 
-inputFile.addEventListener( 'change', async () => {
+async function loadFile( file: File | Response, name: string ): Promise<void> {
+  const buffer = await file.arrayBuffer();
+  const array = new Uint8Array( buffer );
+
+  const result = inflate( array );
+
+  currentTokens = result.tokens;
+  renderer.setTokens( result.tokens );
+
+  const ratio = ( result.meta.compressedSize / result.meta.rawSize * 100.0 ).toFixed( 3 );
+
+  divMeta.textContent = [
+    `file: ${ name }`,
+    `format: ${ result.meta.format }`,
+    `raw size: ${ result.meta.rawSize }`,
+    `compressed size: ${ result.meta.compressedSize } (${ ratio } %)`,
+  ].join( '\n' );
+}
+
+inputFile.addEventListener( 'change', () => {
   const file = inputFile.files?.[ 0 ];
 
   if ( file != null ) {
-    const buffer = await file.arrayBuffer();
-    const array = new Uint8Array( buffer );
-
-    const result = inflate( array );
-
-    currentTokens = result.tokens;
-    renderer.setTokens( result.tokens );
-
-    const ratio = ( result.meta.compressedSize / result.meta.rawSize * 100.0 ).toFixed( 3 );
-
-    divMeta.textContent = [
-      `file: ${ file.name }`,
-      `format: ${ result.meta.format }`,
-      `raw size: ${ result.meta.rawSize }`,
-      `compressed size: ${ result.meta.compressedSize } (${ ratio } %)`,
-    ].join( '\n' );
+    loadFile( file, file.name );
   }
 } );
+
+fetch( domainBin )
+  .then( ( res ) => loadFile( res, 'domain.js.bin' ) );
 
 canvas.addEventListener( 'mousemove', ( event ) => {
   divTooltip.style.left = `${ event.clientX + 8 }px`;

@@ -19,7 +19,7 @@ export class Renderer {
 
     const aspect = canvas.width / canvas.height;
     this.__camera = new PerspectiveCamera( 45, aspect, 1.0, 10000.0 );
-    this.__camera.position.set( 0, 0, 10 );
+    this.__camera.position.set( 0, 0, 30 );
 
     this.__controls = new OrbitControls( this.__camera, canvas );
 
