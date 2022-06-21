@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>deflate-analyzer</title>
+    <style>
+      body {
+        overflow: hidden;
+        margin: 0;
+
+        color: #ffffff;
+        font-family: 'Consolas', monospace;
+      }
+
+      #canvas {
+        position: fixed;
+        width: 100%;
+        height: 100%;
+      }
+
+      #divUI {
+        position: fixed;
+      }
+
+      #divMeta {
+        white-space: pre;
+      }
+
+      #divTooltip {
+        display: none;
+        position: fixed;
+        padding: 4px;
+        white-space: pre;
+        background: #123;
+        color: #fff;
+        border-radius: 4px;
+        pointer-events: none;
+      }
+    </style>
+    <script type="module" crossorigin src="/assets/index.4775a1ba.js"></script>
+  </head>
+  <body>
+    <div id="root">
+      <canvas id="canvas"></canvas>
+      <div id="divUI">
+        <input id="inputFile" type="file" />
+        <div id="divMeta">Select a file (gzip deflate, zlib deflate, raw deflate)</div>
+      </div>
+      <div id="divTooltip"></div>
+    </div>
+    
+  </body>
+</html>
