@@ -8,6 +8,9 @@
       body {
         overflow: hidden;
         margin: 0;
+
+        color: #ffffff;
+        font-family: 'Consolas', monospace;
       }
 
       #canvas {
@@ -16,12 +19,15 @@
         height: 100%;
       }
 
-      #inputFile {
-        display: block;
+      #divUI {
         position: fixed;
       }
 
-      #divInfo {
+      #divMeta {
+        white-space: pre;
+      }
+
+      #divTooltip {
         display: none;
         position: fixed;
         padding: 4px;
@@ -36,8 +42,11 @@
   <body>
     <div id="root">
       <canvas id="canvas"></canvas>
-      <input id="inputFile" type="file" />
-      <div id="divInfo"></div>
+      <div id="divUI">
+        <input id="inputFile" type="file" />
+        <div id="divMeta">Select a file (gzip deflate, zlib deflate, raw deflate)</div>
+      </div>
+      <div id="divTooltip"></div>
     </div>
     <script type="module" src="/src/main.ts"></script>
   </body>

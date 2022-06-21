@@ -19,6 +19,12 @@ export interface InflateToken {
   }
 }
 
+export interface InflateMeta {
+  format: 'gzip' | 'deflate' | 'deflate-raw';
+  rawSize: number;
+  compressedSize: number;
+}
+
 interface TreeSet {
   litCodeLengths: Uint8Array;
   litCodeTree: Map<number, number>;
@@ -231,34 +237,37 @@ function checkZlib( array: Uint8Array, headBox: [ number ] ): boolean {
   }
 }
 
-export function inflate( array: Uint8Array ): InflateToken[] {
+export function inflate( array: Uint8Array ): {
+  tokens: InflateToken[];
+  meta: InflateMeta;
+} {
   const headBox: [ number ] = [ 0 ];
   const tokens: InflateToken[] = [];
   const raw: number[] = [];
 
-  let isOnDeflateHead = false;
+  let format: 'gzip' | 'deflate' | 'deflate-raw' | undefined;
 
   // check gzip
-  if ( !isOnDeflateHead ) {
+  if ( format == null ) {
     const isGzip = checkGzip( array, headBox );
 
     if ( isGzip ) {
-      isOnDeflateHead = true;
+      format = 'gzip';
     }
   }
 
   // check zlib
-  if ( !isOnDeflateHead ) {
+  if ( format == null ) {
     const isZlib = checkZlib( array, headBox );
 
     if ( isZlib ) {
-      isOnDeflateHead = true;
+      format = 'deflate';
     }
   }
 
-  if ( !isOnDeflateHead ) {
+  if ( format == null ) {
     console.info( 'Assuming I\'m processing raw deflate' );
-    isOnDeflateHead = true; // meaningless but makes sense
+    format = 'deflate-raw'; // meaningless but makes sense
   }
 
   for ( ;; ) {
@@ -270,5 +279,12 @@ export function inflate( array: Uint8Array ): InflateToken[] {
     }
   }
 
-  return tokens;
+  return {
+    tokens,
+    meta: {
+      format: format!,
+      compressedSize: array.length,
+      rawSize: raw.length,
+    },
+  };
 }

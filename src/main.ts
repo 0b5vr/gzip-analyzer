@@ -3,7 +3,8 @@ import { Renderer } from './Renderer';
 
 const inputFile = document.getElementById( 'inputFile' ) as HTMLInputElement;
 const canvas = document.getElementById( 'canvas' ) as HTMLCanvasElement;
-const divInfo = document.getElementById( 'divInfo' ) as HTMLDivElement;
+const divMeta = document.getElementById( 'divMeta' ) as HTMLDivElement;
+const divTooltip = document.getElementById( 'divTooltip' ) as HTMLDivElement;
 
 canvas.width = window.innerWidth;
 canvas.height = window.innerHeight;
@@ -27,14 +28,23 @@ inputFile.addEventListener( 'change', async () => {
 
     const result = inflate( array );
 
-    currentTokens = result;
-    renderer.setTokens( result );
+    currentTokens = result.tokens;
+    renderer.setTokens( result.tokens );
+
+    const ratio = ( result.meta.compressedSize / result.meta.rawSize * 100.0 ).toFixed( 3 );
+
+    divMeta.textContent = [
+      `file: ${ file.name }`,
+      `format: ${ result.meta.format }`,
+      `raw size: ${ result.meta.rawSize }`,
+      `compressed size: ${ result.meta.compressedSize } (${ ratio } %)`,
+    ].join( '\n' );
   }
 } );
 
 canvas.addEventListener( 'mousemove', ( event ) => {
-  divInfo.style.left = `${ event.clientX + 8 }px`;
-  divInfo.style.top = `${ event.clientY + 8 }px`;
+  divTooltip.style.left = `${ event.clientX + 8 }px`;
+  divTooltip.style.top = `${ event.clientY + 8 }px`;
 
   const x = ( event.clientX / window.innerWidth ) * 2 - 1;
   const y = - ( event.clientY / window.innerHeight ) * 2 + 1;
@@ -45,20 +55,20 @@ canvas.addEventListener( 'mousemove', ( event ) => {
     const { col, row } = castRayResult;
     const token = currentTokens![ col + row * 64 ];
 
-    divInfo.textContent = [
+    divTooltip.textContent = [
       `${ token.bits.toFixed( 2 ) } bits`,
       '',
       ...Object.entries( token.details ).map( ( [ key, value ] ) => (
         `${ key }: ${ value }`
       ) ),
     ].join( '\n' );
-    divInfo.style.display = 'block';
+    divTooltip.style.display = 'block';
   } else {
-    divInfo.style.display = 'none';
+    divTooltip.style.display = 'none';
   }
 } );
 
-function update() {
+function update(): void {
   renderer.update();
 
   requestAnimationFrame( update );
