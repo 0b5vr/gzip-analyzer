@@ -218,9 +218,9 @@ function checkZlib( array: Uint8Array, headBox: [ number ] ): boolean {
   const fdict = getBits( array, headBox, 1 );
   getBits( array, headBox, 2 ); // flevel, discard
 
-  const check = getBits( array, [ 0 ], 16 );
+  const check = array[ 0 ] * 256 + array[ 1 ];
 
-  if ( cm === 8 && cinfo === 7 && fdict === 0 && check / 31 === 0 ) {
+  if ( cm === 8 && cinfo === 7 && fdict === 0 && check % 31 === 0 ) {
     console.info( 'Assuming I\'m processing zlib deflate' );
 
     return true;
