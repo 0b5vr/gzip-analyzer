@@ -35,9 +35,9 @@ export function colorTurbo( x: number ): RawRGB {
   ];
 
   const col = [
-    vecDot( kr, xv ),
-    vecDot( kg, xv ),
-    vecDot( kb, xv ),
+    saturate( vecDot( kr, xv ) ),
+    saturate( vecDot( kg, xv ) ),
+    saturate( vecDot( kb, xv ) ),
   ];
 
   return col as RawRGB;

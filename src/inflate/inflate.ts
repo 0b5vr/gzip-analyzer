@@ -5,7 +5,7 @@ import { parseDistanceCode } from './parseDistanceCode';
 import { parseLengthCode } from './parseLengthCode';
 
 export interface InflateToken {
-  content: string;
+  value: number;
   bits: number;
   details: {
     type: 'literal';
@@ -120,10 +120,8 @@ function processBlockUsingTree(
       raw.push( ...concat );
 
       concat.forEach( ( value ) => {
-        const content = String.fromCharCode( value );
-
         tokens.push( {
-          content,
+          value,
           bits: ( lengthBits + distanceBits ) / length,
           details: {
             type: 'repeat',
@@ -137,12 +135,10 @@ function processBlockUsingTree(
     } else {
       raw.push( value );
 
-      const content = String.fromCharCode( value );
-
       const bits = headBox[ 0 ] - headBeforeAlpha;
 
       tokens.push( {
-        content,
+        value,
         bits,
         details: {
           type: 'literal',
