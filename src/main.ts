@@ -23,7 +23,7 @@ inputFile.addEventListener( 'change', async () => {
 
   if ( file != null ) {
     const buffer = await file.arrayBuffer();
-    const array = new Uint8Array( buffer, 2 );
+    const array = new Uint8Array( buffer );
 
     const result = inflate( array );
 

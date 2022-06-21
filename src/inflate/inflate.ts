@@ -167,12 +167,7 @@ function processBlock(
   } else if ( type === 1 ) {
     throw new Error( 'Unsupported block' );
   } else {
-    const headBeforeTreeGen = headBox[ 0 ];
-
     const treeSet = parseDynamicHuffmanTree( array, headBox );
-
-    const lenTreeGen = headBox[ 0 ] - headBeforeTreeGen;
-
     const result = processBlockUsingTree( array, headBox, raw, treeSet );
 
     return {
@@ -182,10 +177,89 @@ function processBlock(
   }
 }
 
+/**
+ * Check if the given file is gzip.
+ * If it is gzip, forward the `headBox` to the head of the deflate payload and return `true`.
+ * Otherwise, it just returns `false`.
+ */
+ function checkGzip( array: Uint8Array, headBox: [ number ] ): boolean {
+  const id1 = array[ 0 ];
+  const id2 = array[ 1 ];
+
+  if ( id1 === 0x1f && id2 === 0x8b ) {
+    console.info( 'Assuming I\'m processing gzip' );
+
+    const cm = array[ 2 ];
+    const flg = array[ 3 ];
+
+    if ( cm === 8 && flg === 0 ) {
+      headBox[ 0 ] = 80; // 10 bytes
+
+      return true;
+    } else {
+      console.info( 'Encountered unsupported gzip feature' );
+
+      return false;
+    }
+  } else {
+    return false;
+  }
+}
+
+/**
+ * Check if the given file is zlib deflate.
+ * If it is zlib, forward the `headBox` to the head of the deflate payload and return `true`.
+ * Otherwise, it just returns `false`.
+ */
+function checkZlib( array: Uint8Array, headBox: [ number ] ): boolean {
+  const cm = getBits( array, headBox, 4 );
+  const cinfo = getBits( array, headBox, 4 );
+  getBits( array, headBox, 5 ); // fcheck, discard
+  const fdict = getBits( array, headBox, 1 );
+  getBits( array, headBox, 2 ); // flevel, discard
+
+  const check = getBits( array, [ 0 ], 16 );
+
+  if ( cm === 8 && cinfo === 7 && fdict === 0 && check / 31 === 0 ) {
+    console.info( 'Assuming I\'m processing zlib deflate' );
+
+    return true;
+  } else {
+    headBox[ 0 ] = 0;
+
+    return false;
+  }
+}
+
 export function inflate( array: Uint8Array ): InflateToken[] {
   const headBox: [ number ] = [ 0 ];
   const tokens: InflateToken[] = [];
   const raw: number[] = [];
+
+  let isOnDeflateHead = false;
+
+  // check gzip
+  if ( !isOnDeflateHead ) {
+    const isGzip = checkGzip( array, headBox );
+
+    if ( isGzip ) {
+      isOnDeflateHead = true;
+    }
+  }
+
+  // check zlib
+  if ( !isOnDeflateHead ) {
+    const isZlib = checkZlib( array, headBox );
+
+    if ( isZlib ) {
+      isOnDeflateHead = true;
+    }
+  }
+
+  if ( !isOnDeflateHead ) {
+    console.info( 'Assuming I\'m processing raw deflate' );
+    isOnDeflateHead = true; // meaningless but makes sense
+  }
 
   for ( ;; ) {
     const result = processBlock( array, headBox, raw );
