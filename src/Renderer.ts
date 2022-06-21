@@ -45,7 +45,7 @@ export class Renderer {
 
   public castRay( x: number, y: number ): { col: number, row: number } | null {
     const visualizeMesh = this.__visualizeMesh;
-    if ( visualizeMesh == null ) { return; }
+    if ( visualizeMesh == null ) { return null; }
 
     const { width, height, mesh } = visualizeMesh;
 

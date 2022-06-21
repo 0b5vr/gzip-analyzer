@@ -46,23 +46,28 @@ export class VisualizeMesh {
 
           float show = 1.0;
 
+          float d = abs( dFdx( vUv.x * float( ${ this.width } ) ) ) * 128.0;
+
           vec2 charCoord = fract( vUv * vec2( ${ this.width }, ${ this.height } ) );
-          show *= smoothstep( 0.45, 0.4, abs( charCoord.x - 0.5 ) ); // remove mipmap artifact on edge
-          show *= smoothstep( 0.45, 0.4, abs( charCoord.y - 0.5 ) ); // remove mipmap artifact on edge
+          show *= step( abs( charCoord.x - 0.5 ), 0.49 ); // remove mipmap artifact on edge
+          show *= step( abs( charCoord.y - 0.5 ), 0.49 ); // remove mipmap artifact on edge
 
           charCoord.x = ${ ASPECT } * ( charCoord.x - 0.5 ) + 0.5;
 
           vec2 charCell = floor( mod( vec2( sampledDiffuseColor.w ) * vec2( 256.0, 16.0 ), 16.0 ) );
           vec2 charUv = ( charCoord + charCell ) / 16.0;
-          charUv.y = 1.0 - charUv.y;
-          vec4 charTex = texture2D( texFontSheet, charUv );
+          float charTex = texture2D( texFontSheet, charUv ).x;
 
-          show *= smoothstep( 0.25, 0.125, dFdx( charCoord.x ) );
+          show *= smoothstep( 32.0, 16.0, d );
 
           diffuseColor = mix(
             diffuseColor,
-            vec4( charTex.rgb, 1.0 ),
-            charTex.a * show
+            mix(
+              vec4( 0.0, 0.0, 0.0, 1.0 ),
+              vec4( 1.0 ),
+              smoothstep( -d, d, charTex )
+            ),
+            smoothstep( -d, d, charTex + 8.0 ) * show
           );
         `
       )
