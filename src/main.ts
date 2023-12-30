@@ -63,14 +63,18 @@ canvas.addEventListener( 'mousemove', ( event ) => {
     const { col, row } = castRayResult;
     const token = currentTokens![ col + row * 64 ];
 
-    divTooltip.textContent = [
-      `${ token.bits.toFixed( 2 ) } bits`,
-      '',
-      ...Object.entries( token.details ).map( ( [ key, value ] ) => (
-        `${ key }: ${ value }`
-      ) ),
-    ].join( '\n' );
-    divTooltip.style.display = 'block';
+    if ( token == null ) {
+      divTooltip.style.display = 'none';
+    } else {
+      divTooltip.textContent = [
+        `${ token.bits.toFixed( 2 ) } bits`,
+        '',
+        ...Object.entries( token.details ).map( ( [ key, value ] ) => (
+          `${ key }: ${ value }`
+        ) ),
+      ].join( '\n' );
+      divTooltip.style.display = 'block';
+    }
   } else {
     divTooltip.style.display = 'none';
   }

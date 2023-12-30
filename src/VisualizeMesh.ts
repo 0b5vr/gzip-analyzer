@@ -44,19 +44,19 @@ export class VisualizeMesh {
         `
           #include <map_fragment>
 
-          float show = 1.0;
+          float show = step( 0.001, sampledDiffuseColor.w );
 
           float d = abs( dFdx( vUv.x * float( ${ this.width } ) ) ) * 128.0;
 
-          vec2 charCoord = fract( vUv * vec2( ${ this.width }, ${ this.height } ) );
-          show *= step( abs( charCoord.x - 0.5 ), 0.49 ); // remove mipmap artifact on edge
-          show *= step( abs( charCoord.y - 0.5 ), 0.49 ); // remove mipmap artifact on edge
+          vec2 grad = vUv * vec2( ${ ASPECT } * ${ this.width }.0, ${ this.height } ) / 16.0;
 
+          vec2 charCoord = fract( vUv * vec2( ${ this.width }, ${ this.height } ) );
           charCoord.x = ${ ASPECT } * ( charCoord.x - 0.5 ) + 0.5;
 
           vec2 charCell = floor( mod( vec2( sampledDiffuseColor.w ) * vec2( 256.0, 16.0 ), 16.0 ) );
+
           vec2 charUv = ( charCoord + charCell ) / 16.0;
-          float charTex = texture2D( texFontSheet, charUv ).x;
+          float charTex = textureGrad( texFontSheet, charUv, dFdx( grad ), dFdy( grad ) ).x;
 
           show *= smoothstep( 32.0, 16.0, d );
 
